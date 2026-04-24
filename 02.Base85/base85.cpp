@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <cstdint>
 #include <functional>
@@ -12,7 +12,6 @@ std::vector<uint8_t> read_stdin_to_vector_iostream()
     out.reserve(1024);
     std::vector<char> buf(BUF_SIZE);
 
-    // Ensure std::cin is in binary mode where applicable (no-op on POSIX).
     std::ios::sync_with_stdio(false);
 
     while (std::cin)
@@ -22,11 +21,11 @@ std::vector<uint8_t> read_stdin_to_vector_iostream()
         if (n > 0)
         {
             out.insert(out.end(), reinterpret_cast<uint8_t*>(buf.data()),
-                       reinterpret_cast<uint8_t*>(buf.data() + n));
+                reinterpret_cast<uint8_t*>(buf.data() + n));
         }
         if (n < BUF_SIZE)
         {
-            // either EOF or error
+           
             break;
         }
     }
@@ -35,20 +34,18 @@ std::vector<uint8_t> read_stdin_to_vector_iostream()
 
 void write_vector_to_stdout(const std::vector<uint8_t>& data)
 {
-    // Ensure no tied flushing and faster IO (optional)
     std::ios::sync_with_stdio(false);
-    std::cout.setf(std::ios::fmtflags(0), std::ios::basefield); // no formatting changes
+    std::cout.setf(std::ios::fmtflags(0), std::ios::basefield); 
 
     if (!data.empty())
     {
         std::cout.write(reinterpret_cast<const char*>(data.data()), data.size());
     }
-    // flush to ensure data is written out
     std::cout.flush();
 }
 
 
-int main(int argc, const char *argv[])
+int main(int argc, const char* argv[])
 {
     if (argc != 2)
     {
