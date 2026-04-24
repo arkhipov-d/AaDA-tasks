@@ -1,9 +1,9 @@
 include ../Makefile.inc
 
-release : sort_demo.r.o
+release : sort.r.o
 	$(LD) -o $@ $^
 
-debug   : sort_demo.d.o
+debug   : sort.d.o
 	$(LD) -o $@ $^
 
 utest   : sort_test.d.o
