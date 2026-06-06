@@ -1,26 +1,38 @@
-CXX_EXTRA_FLAGS=-I ../external/lazycsv/include -I ../external/eigen $(shell pkgconf --cflags openblas)
-LD_EXTRA_OPT=$(pkgconf --libs openblas)
+CXX ?= g++
+CXXFLAGS ?= -std=c++17 -Wall -Wextra -Wpedantic -Werror
+CPPFLAGS += -I../external/eigen -I../external/eigen3 -I/usr/include/eigen3
+GTEST_LIBS ?= -lgtest -lgtest_main -pthread
 
-include ../Makefile.inc
+COMMON_SRC = util.cpp Gauss_solve.cpp
 
-release : gauss
-
-gauss  : util.r.o Gauss_main.r.o Gauss_solve.r.o
-	$(LD) -fopenmp -o $@ $^ $(LD_EXTRA_OPT)
-
-debug   : util.d.o Gauss_main.d.o Gauss_solve.d.o
-	$(LD) -fopenmp -o $@ $^ $(LD_EXTRA_OPT)
-
-utest   : Gauss_test.d.o util.d.o Gauss_solve.d.o
-	$(LD) -fopenmp -o $@ $^ $(GTEST_LIBS)
-
-run_utest : utest
-	./$^
-
-run_itest : release
-	echo "Integration tests..."
-	./integration_test.sh
+.PHONY: all release debug utest run_utest run_itest depends clean cleanall mrproper
 
 all: depends run_utest run_itest
 
-include Makefile.hdrdep
+release: gauss
+
+gauss: Gauss_main.cpp $(COMMON_SRC) util.h Gauss_solve.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -O3 -DNDEBUG Gauss_main.cpp $(COMMON_SRC) -o $@
+
+debug: Gauss_main.cpp $(COMMON_SRC) util.h Gauss_solve.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -DDEBUG Gauss_main.cpp $(COMMON_SRC) -o $@
+
+utest: Gauss_test.cpp $(COMMON_SRC) util.h Gauss_solve.h
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -g -DDEBUG Gauss_test.cpp $(COMMON_SRC) -o $@ $(GTEST_LIBS)
+
+run_utest: utest
+	./utest
+
+run_itest: release
+	./integration_test.sh
+
+depends:
+	@touch Makefile.hdrdep
+
+clean:
+	- rm -f *.o *.d.o *.r.o *.hdrdep.bak gauss debug utest
+
+cleanall: clean
+	- rm -f Makefile.hdrdep
+
+mrproper: cleanall
